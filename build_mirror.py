@@ -256,15 +256,8 @@ def write_css():
         font-size: 1.05em;
     }
     .originallink {font-size: 0.8em; padding-top: 10px;}
-    .tweetwrapper {
-        height: 350px;
-        overflow-x: scroll;
-        margin-top: 20px;
-        border: 1px solid;
-        border-radius: 5px;
-        padding: 10px;
-    }
-    .tweetwrapper .tweet {    
+   
+    .tweet {    
         padding-top: 15px;
         padding-bottom: 10px;
         border-bottom: 1px solid #aaa2a2;
@@ -282,15 +275,40 @@ def write_css():
         font-size: 0.8em;
     }
     
-    .tweetwrapper .tweetdate {
-    margin-top: 0;
-    font-size: 0.8em;
+    .tweet .tweetdate {
+        margin-top: 0;
+        font-size: 0.8em;
     }
     '''
     with open(f"{OUTPUT}/style.css", 'w') as f:
         f.write(css)
     
 
+
+def writeTweetIndex(tweet, j):
+    ''' Write a tweet onto the relevant yearly index page
+    '''
+    
+    # Set some vars
+    linktext = tweet['full_text']
+    linkdest = f"status/{tweet['id']}.html"
+    tweet_date = datetime.strptime(tweet['created_at'], '%Y-%m-%dT%H:%M:%S%z')
+    
+    year = tweet_date.strftime('%Y')
+    
+    # Create the object if it doesn't exist
+    if year not in YEARS:
+       YEARS[year] = document(title=f"{year} Tweet Archive for query {j['query']}")
+       YEARS[year] += link(_href="style.css", _rel="stylesheet", _type="text/css")
+       YEARS[year] += h1(f"{year} Tweet Archive for query {j['query']}")
+       YEARS[year] += a("Index", href="index.html")
+       
+    tdiv = div(_class="tweet")
+    tdiv += a(linktext, href=linkdest)
+    tdiv += div(tweet_date.strftime('%d %b %Y %H:%M'), _class="tweetdate")
+    tdiv += a("View Tweet", href=linkdest, _class="viewtweetlink")
+
+    YEARS[year] += tdiv
 
 
 fh = open(sys.argv[1], 'r')
@@ -378,33 +396,7 @@ for tweet in j['tweets']:
     x += 1
     if x == 300:
         break
-    
-    # Build a point
-    # p = influxdb_client.Point(MEASUREMENT)
-    # p.tag("id", tweet['id'])
-    # p.tag("user_id", tweet['user_id'])
-    # p.tag("user_handle", user_list["user_" + str(tweet['user_id'])]['handle'])
-    # p.tag("contains_links", link_info["has_links"])
-    # p.tag("has_mentions", link_info["has_mentions"])
-    # p.tag("has_image", link_info["has_image"])
-    # p.tag("has_swear", link_info["has_swear"])
-    # p.tag("has_hashtags", link_info["has_hashtags"])
-    # p.field("url", tweet['url'])
-    # p.field("tweet_text", text)
-    # p.field("num_links", link_info["num_links"])
-    # p.field("num_mentions", link_info["num_mentions"])
-    # p.field("mentions", link_info["mentions"])
-    # p.field("num_images", link_info["num_images"])
-    # p.field("num_swear", link_info["num_swear"])
-    # p.field("swear_words", link_info["swear_words"])
-    # p.field("num_words", link_info["num_words"])
-    # p.field("num_hashtags", link_info["num_hashtags"])
-    # p.field("hashtags", link_info["hashtags"])
-    # p.time(tweet['created_at'])
-    
-
-print(global_stats)
-
+       
 stats = f"""
 Archive Stats
 ================
@@ -423,35 +415,38 @@ Stats
 print(stats)
 
 
-with document(title=f"Tweet Archive for query {j['query']}") as doc:
-    link(_href="style.css", _rel="stylesheet", _type="text/css")
-    h1(f"Tweet Archive for query {j['query']}")
-    
-    stats = div(_class="statsdiv")
-    stats += h3("Archive Stats")
-    stats += li(f"Number of tweets: {global_stats['total']}")
-    stats += li(f"{global_stats['has_mentions']} tweets contain a total of {global_stats['num_mentions']} mentions.")
-    stats += li(f"{global_stats['has_swear']} tweets contain a total of {global_stats['num_swear']} profanities.")
-    stats += li(f"{global_stats['has_hashtags']} tweets contain a total of {global_stats['num_hashtags']} hashtags.")
-    stats += li(f"{global_stats['has_links']} tweets contain a total of {global_stats['num_links']} links.")
-    stats += li(f"{global_stats['has_images']} tweets reference a total of {global_stats['num_images']} images.")
 
-    # Add links to tweets
-    hr()
-    h3("Tweets")
-    tweetdiv = div(_class="tweetwrapper")
-    for tweet in j['tweets']:
-        linktext = tweet['full_text']
-        linkdest = f"status/{tweet['id']}.html"
-        tweet_date = datetime.strptime(tweet['created_at'], '%Y-%m-%dT%H:%M:%S%z')
-        
-        tdiv = div(_class="tweet")
-        tdiv += a(linktext, href=linkdest)
-        tdiv += div(tweet_date.strftime('%d %b %Y %H:%M'), _class="tweetdate")
-        tdiv += a("View Tweet", href=linkdest, _class="viewtweetlink")
+# This looks quite messy without use of contexts. The problem is, we make calls out to write
+# into other pages. If you do those calls from within a context, dominator will write into *both* pages
+YEARS={}
+doc = document(title=f"Tweet Archive for query {j['query']}")
+doc += link(_href="style.css", _rel="stylesheet", _type="text/css")
+doc += h1(f"Tweet Archive for query {j['query']}")
 
-        tweetdiv += tdiv
-    
+stats = div(_class="statsdiv")
+stats += h3("Archive Stats")
+stats += li(f"Number of tweets: {global_stats['total']}")
+stats += li(f"{global_stats['has_mentions']} tweets contain a total of {global_stats['num_mentions']} mentions.")
+stats += li(f"{global_stats['has_swear']} tweets contain a total of {global_stats['num_swear']} profanities.")
+stats += li(f"{global_stats['has_hashtags']} tweets contain a total of {global_stats['num_hashtags']} hashtags.")
+stats += li(f"{global_stats['has_links']} tweets contain a total of {global_stats['num_links']} links.")
+stats += li(f"{global_stats['has_images']} tweets reference a total of {global_stats['num_images']} images.")
+
+doc += stats
+
+# Add links to tweets
+doc += hr()
+doc += h3("Tweet Archives")
+
+for tweet in j['tweets']:
+    writeTweetIndex(tweet, j)
+
+
+# Iterate over the years and write out their pages, and a link to them
+for year in YEARS:
+    doc += li(a(year, href=f"{year}.html"))
+    with open(f"{OUTPUT}/{year}.html", 'w') as f:
+        f.write(YEARS[year].render())
 
 
 
