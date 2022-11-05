@@ -181,6 +181,25 @@ def replace_mention(match_o):
     return f"<a href='https://twitter.com/{handle}' rel='nofollow noopener' target=_blank>@{handle}</a>"
 
 
+
+def handle_tags(tweet_text):
+    ''' Identify hashtags and link them
+    
+    Note: this *may* make the tweet longer than actually fits in a tweet
+    '''
+    
+    return re.sub("#([^\ ]+)", replace_hashtag, tweet_text)
+
+
+def replace_hashtag(match_o):
+    ''' Receive a username, and replace it with a link)
+    '''
+
+    handle = match_o.group().lstrip("#")
+
+    return f"<a href='https://twitter.com/hashtag/{handle}' rel='nofollow noopener' target=_blank>#{handle}</a>"
+
+
 def build_tweet_page(tweet, user_list):
     ''' Build a HTML page containing the tweet
     '''
@@ -277,6 +296,7 @@ for tweet in j['tweets']:
     # Convert the text
     tweet['text'] = handle_embedded_links(tweet['full_text'])
     tweet['text'] = handle_mentions(tweet['text'])
+    tweet['text'] = handle_tags(tweet['text'])
     
     link_info = check_for_links(tweet['text'])
     build_tweet_page(tweet, user_list)
