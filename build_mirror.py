@@ -3,7 +3,7 @@
 #
 # Read a tweet dump and build a DB
 #
-# project-management-only/staging#1
+# pip3 install dominate
 #
 
 import json
@@ -12,6 +12,8 @@ import re
 import requests
 import sys
 
+from dominate import document
+from dominate.tags import *
 
 CURSES = [
     "fuck",
@@ -46,6 +48,11 @@ CURSES_WHITELIST = [
     "parser",
     "swanky"
     ]
+
+
+# Output directory filename
+OUTPUT = "output"
+
 
 def check_for_links(tweet_text):
     ''' Check whether the tweet contains links
@@ -151,6 +158,41 @@ def get_tco_dest(match_o):
     return r.headers['location']
     
 
+def build_tweet_page(tweet, user_list):
+    ''' Build a HTML page containing the tweet
+    '''
+    
+    tweet_user = user_list["user_" + str(tweet['user_id'])]['handle']
+    tweet_summary = tweet["full_text"][0:80]
+    pagetitle = f"{tweet_user}: \"{tweet_summary}\""
+    
+    with document(title=f"{tweet_user}: \"{pagetitle}\"") as doc:
+        link(_href="../style.css", _rel="stylesheet", _type="text/css")
+        authordiv = div(_class="author_block")
+        authordiv += div(user_list["user_" + str(tweet['user_id'])]['name'], _class="author_name")
+        authordiv += div("@" + user_list["user_" + str(tweet['user_id'])]['handle'], _class="authorhandle")
+        
+        div(tweet["text"], _class="tweettext")
+    
+    # TODO: figure out how to handle images 
+    
+    with open(f"{OUTPUT}/status/{tweet['id']}.html", 'w') as f:
+        f.write(doc.render())
+
+
+def write_css():
+    ''' Write CSS to the stylesheet
+    '''
+    css = '''
+    body {padding: 10px}
+    .author_block {padding-bottom: 20px}
+    
+    '''
+    with open(f"{OUTPUT}/style.css", 'w') as f:
+        f.write(css)
+    
+
+
 
 fh = open(sys.argv[1], 'r')
 j = json.load(fh)
@@ -159,6 +201,16 @@ fh.close()
 
 # Instantiate a session so we can use keep-alives
 SESSION = requests.session()
+
+# Create an output directory
+if not os.path.exists(OUTPUT):
+    os.mkdir(OUTPUT)
+
+if not os.path.exists(f"{OUTPUT}/status"):
+    os.mkdir(f"{OUTPUT}/status")
+
+
+write_css()
 
 # Build a list of users by id
 user_list = {}
@@ -169,12 +221,14 @@ for user in j['users']:
                 }
 
 
+
 print("Handling tweets from query {j['query']}")
 for tweet in j['tweets']:
     
     # Convert the text
-    text = handle_embedded_links(tweet['full_text'])
-    link_info = check_for_links(text)
+    tweet['text'] = handle_embedded_links(tweet['full_text'])
+    link_info = check_for_links(tweet['text'])
+    build_tweet_page(tweet, user_list)
     
     # Build a point
     # p = influxdb_client.Point(MEASUREMENT)
