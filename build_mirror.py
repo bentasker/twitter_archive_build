@@ -12,9 +12,11 @@ import re
 import requests
 import sys
 
+from datetime import datetime
 from dominate import document
 from dominate.tags import *
 from dominate.util import raw
+
 
 CURSES = [
     "fuck",
@@ -184,6 +186,7 @@ def build_tweet_page(tweet, user_list):
     '''
     
     tweet_user = user_list["user_" + str(tweet['user_id'])]['handle']
+    tweet_date = datetime.strptime(tweet['created_at'], '%Y-%m-%dT%H:%M:%S%z')
 
     user_link = "https://twitter.com/" + tweet_user
     tweet_link = user_link + f"/status/{tweet['id']}"
@@ -206,7 +209,7 @@ def build_tweet_page(tweet, user_list):
         div(raw(tweet["text"]), _class="tweettext")
         
         # Metadata
-        div(tweet['created_at'], _class="tweetdate")
+        div(tweet_date.strftime('%d %b %Y %H:%M'), _class="tweetdate")
         div(a("View on Twitter", href=tweet_link), _class="originallink")
         
     
