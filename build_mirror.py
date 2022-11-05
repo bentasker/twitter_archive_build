@@ -405,7 +405,6 @@ for user in j['users']:
                 }
 
 
-x=0
 print("Handling tweets from query {j['query']}")
 for tweet in j['tweets']:
     
@@ -442,10 +441,7 @@ for tweet in j['tweets']:
         y = [global_stats["hashtags"].add(z) for z in link_info["hashtags"].split(",")]
         
         
-    x += 1
-    if x == 1000:
-        break
-       
+
 stats = f"""
 Archive Stats
 ================
