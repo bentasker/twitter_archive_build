@@ -220,11 +220,13 @@ def build_tweet_page(tweet, user_list):
     tweet_summary = tweet["full_text"][0:80]
     pagetitle = f"{tweet_user}: \"{tweet_summary}\""
     
-    with document(title=f"{tweet_user}: \"{pagetitle}\"") as doc:
+    doc = document(title=f"{tweet_user}: \"{pagetitle}\"")
+    
+    with doc.head:
+        meta(name="viewport",content="width=device-width, initial-scale=1")
         link(_href="../style.css", _rel="stylesheet", _type="text/css")
         
-        a(tweet_year, href=f"../{tweet_year}.html", _class="yearindex")
-        
+    with doc:
         authordiv = div(_class="author_block")
         authordiv += img(src=f"../avatar/{tweet_user}.jpg",
                          style="display: none",
@@ -244,6 +246,7 @@ def build_tweet_page(tweet, user_list):
         # Metadata
         div(tweet_date.strftime('%d %b %Y %H:%M'), _class="tweetdate")
         div(a("View on Twitter", href=tweet_link), _class="originallink")
+        a(f"{tweet_year} Archive", href=f"../{tweet_year}.html", _class="yearindex")
         
     
     # TODO: figure out how to handle images 
@@ -302,6 +305,8 @@ def write_css():
         float: left;
         margin-right: 10px;
         padding-top: 2px;
+        width: 48px;
+        height: 50px;
     }
     
     .yearindex {
@@ -326,7 +331,7 @@ def writeTweetIndex(tweet, j, user_list):
     '''
     
     # Set some vars
-    linktext = tweet['full_text']
+    linktext = raw(tweet["text"])
     linkdest = f"status/{tweet['id']}.html"
     tweet_date = datetime.strptime(tweet['created_at'], '%Y-%m-%dT%H:%M:%S%z')
     tweet_user = user_list["user_" + str(tweet['user_id'])]['handle']
