@@ -169,7 +169,7 @@ def get_tco_dest(match_o):
     
 
 def handle_mentions(tweet_text):
-    ''' Identify any t.co URLs and convert them to their full version
+    ''' Identify mentions and link out to the mentioned user
     
     Note: this *may* make the tweet longer than actually fits in a tweet
     '''
@@ -197,7 +197,7 @@ def handle_tags(tweet_text):
 
 
 def replace_hashtag(match_o):
-    ''' Receive a username, and replace it with a link)
+    ''' Receive a hashtag and replace it with a link)
     '''
 
     handle = match_o.group().lstrip("#")
@@ -463,6 +463,7 @@ for year in YEARS:
         f.write(YEARS[year]['doc'].render())
 
 
+# Write out
 with open(f"{OUTPUT}/index.html", 'w') as f:
     f.write(doc.render())
 
