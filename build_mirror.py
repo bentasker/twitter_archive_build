@@ -14,6 +14,7 @@ import sys
 
 from dominate import document
 from dominate.tags import *
+from dominate.util import raw
 
 CURSES = [
     "fuck",
@@ -158,6 +159,24 @@ def get_tco_dest(match_o):
     return r.headers['location']
     
 
+def handle_mentions(tweet_text):
+    ''' Identify any t.co URLs and convert them to their full version
+    
+    Note: this *may* make the tweet longer than actually fits in a tweet
+    '''
+    
+    return re.sub("@([^\ ]+)", replace_mention, tweet_text)
+
+
+def replace_mention(match_o):
+    ''' Receive a username, and replace it with a link)
+    '''
+
+    handle = match_o.group().lstrip("@")
+
+    return f"<a href='https://twitter.com/{handle}' rel='nofollow noopener' target=_blank>@{handle}</a>"
+
+
 def build_tweet_page(tweet, user_list):
     ''' Build a HTML page containing the tweet
     '''
@@ -182,7 +201,7 @@ def build_tweet_page(tweet, user_list):
                            ),
                         _class="authorhandle")
         
-        div(tweet["text"], _class="tweettext")
+        div(raw(tweet["text"]), _class="tweettext")
         
         # Metadata
         div(tweet['created_at'], _class="tweetdate")
@@ -251,6 +270,8 @@ for tweet in j['tweets']:
     
     # Convert the text
     tweet['text'] = handle_embedded_links(tweet['full_text'])
+    tweet['text'] = handle_mentions(tweet['text'])
+    
     link_info = check_for_links(tweet['text'])
     build_tweet_page(tweet, user_list)
     
