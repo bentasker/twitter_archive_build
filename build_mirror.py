@@ -124,6 +124,7 @@ def check_for_links(tweet_text):
     for word in words:
         if word.startswith('#'):
             hashtags.append(word)
+
     
     c = len(hashtags)
     if c > 0:
@@ -278,6 +279,25 @@ if not os.path.exists(f"{OUTPUT}/status"):
     os.mkdir(f"{OUTPUT}/status")
 
 
+# Stats object
+global_stats = {
+    "total" : 0,
+    "has_mentions" : 0,
+    "has_swear" : 0,
+    "has_images" : 0,
+    "has_hashtags" : 0,
+    "has_links" : 0,
+    "num_mentions" : 0,
+    "num_swear" : 0,
+    "num_images" : 0,
+    "num_hashtags" : 0,
+    "num_links" : 0,
+    "hashtags" : set(),
+    "profanities": set()
+    }
+
+
+# Create the CSS file
 write_css()
 
 # Build a list of users by id
@@ -289,7 +309,7 @@ for user in j['users']:
                 }
 
 
-
+x=0
 print("Handling tweets from query {j['query']}")
 for tweet in j['tweets']:
     
@@ -298,8 +318,37 @@ for tweet in j['tweets']:
     tweet['text'] = handle_mentions(tweet['text'])
     tweet['text'] = handle_tags(tweet['text'])
     
-    link_info = check_for_links(tweet['text'])
+    link_info = check_for_links(tweet['full_text'])
     build_tweet_page(tweet, user_list)
+    
+    global_stats["total"] += 1
+    
+    if link_info["has_swear"]:
+        global_stats["has_swear"] += 1
+        global_stats["num_swear"] += link_info["num_swear"]
+        y = [global_stats["profanities"].add(z) for z in link_info["swear_words"].split(",")]
+    
+    if link_info["has_mentions"]:
+        global_stats["has_mentions"] += 1
+        global_stats["num_mentions"] += link_info["num_mentions"]
+        
+    if link_info["has_image"]:
+        global_stats["has_images"] += 1
+        global_stats["num_images"] += link_info["num_images"]
+
+    if link_info["num_links"] > 0:
+        global_stats["has_links"] += 1
+        global_stats["num_links"] += link_info["num_links"]
+
+    if link_info["has_hashtags"]:
+        global_stats["has_hashtags"] += 1
+        global_stats["num_hashtags"] += link_info["num_hashtags"]
+        y = [global_stats["hashtags"].add(z) for z in link_info["hashtags"].split(",")]
+        
+    x += 1
+    if x == 300:
+        print(global_stats)
+        break
     
     # Build a point
     # p = influxdb_client.Point(MEASUREMENT)
