@@ -6,7 +6,6 @@
 # project-management-only/staging#1
 #
 
-import influxdb_client
 import json
 import os
 import re
@@ -158,25 +157,8 @@ j = json.load(fh)
 fh.close()
 
 
-INFLUXDB_URL = os.getenv("INFLUXDB_URL", "http://127.0.0.1:8086")
-INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "myorg")
-INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN", "zzzza")
-INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET", "telegraf")
-MEASUREMENT = os.getenv("MEASUREMENT", "tweets")
-
-# Set up the Influx client
-client = influxdb_client.InfluxDBClient(
-    url=INFLUXDB_URL,
-    token=INFLUXDB_TOKEN,
-    org=INFLUXDB_ORG
-)
-
 # Instantiate a session so we can use keep-alives
 SESSION = requests.session()
-
-# Write in batches
-write_api = client.write_api()
-
 
 # Build a list of users by id
 user_list = {}
@@ -195,28 +177,28 @@ for tweet in j['tweets']:
     link_info = check_for_links(text)
     
     # Build a point
-    p = influxdb_client.Point(MEASUREMENT)
-    p.tag("id", tweet['id'])
-    p.tag("user_id", tweet['user_id'])
-    p.tag("user_handle", user_list["user_" + str(tweet['user_id'])]['handle'])
-    p.tag("contains_links", link_info["has_links"])
-    p.tag("has_mentions", link_info["has_mentions"])
-    p.tag("has_image", link_info["has_image"])
-    p.tag("has_swear", link_info["has_swear"])
-    p.tag("has_hashtags", link_info["has_hashtags"])
-    p.field("url", tweet['url'])
-    p.field("tweet_text", text)
-    p.field("num_links", link_info["num_links"])
-    p.field("num_mentions", link_info["num_mentions"])
-    p.field("mentions", link_info["mentions"])
-    p.field("num_images", link_info["num_images"])
-    p.field("num_swear", link_info["num_swear"])
-    p.field("swear_words", link_info["swear_words"])
-    p.field("num_words", link_info["num_words"])
-    p.field("num_hashtags", link_info["num_hashtags"])
-    p.field("hashtags", link_info["hashtags"])
-    p.time(tweet['created_at'])
+    # p = influxdb_client.Point(MEASUREMENT)
+    # p.tag("id", tweet['id'])
+    # p.tag("user_id", tweet['user_id'])
+    # p.tag("user_handle", user_list["user_" + str(tweet['user_id'])]['handle'])
+    # p.tag("contains_links", link_info["has_links"])
+    # p.tag("has_mentions", link_info["has_mentions"])
+    # p.tag("has_image", link_info["has_image"])
+    # p.tag("has_swear", link_info["has_swear"])
+    # p.tag("has_hashtags", link_info["has_hashtags"])
+    # p.field("url", tweet['url'])
+    # p.field("tweet_text", text)
+    # p.field("num_links", link_info["num_links"])
+    # p.field("num_mentions", link_info["num_mentions"])
+    # p.field("mentions", link_info["mentions"])
+    # p.field("num_images", link_info["num_images"])
+    # p.field("num_swear", link_info["num_swear"])
+    # p.field("swear_words", link_info["swear_words"])
+    # p.field("num_words", link_info["num_words"])
+    # p.field("num_hashtags", link_info["num_hashtags"])
+    # p.field("hashtags", link_info["hashtags"])
+    # p.time(tweet['created_at'])
     
-    write_api.write(bucket=INFLUXDB_BUCKET, record=p)
+
     
-write_api.close()
+
