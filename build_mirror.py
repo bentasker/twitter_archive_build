@@ -355,7 +355,7 @@ def writeTweetIndex(tweet, j, user_list):
                          _class="authorimg",
                          onload="this.style.display = 'inline-block'"
             )
-    tdiv += a(linktext, href=linkdest)
+    tdiv += span(linktext)
     tdiv += div(tweet_date.strftime('%d %b %Y %H:%M'), _class="tweetdate")
     tdiv += a("View Tweet", href=linkdest, _class="viewtweetlink")
 
