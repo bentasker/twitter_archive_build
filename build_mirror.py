@@ -222,6 +222,11 @@ def build_tweet_page(tweet, user_list):
     with document(title=f"{tweet_user}: \"{pagetitle}\"") as doc:
         link(_href="../style.css", _rel="stylesheet", _type="text/css")
         authordiv = div(_class="author_block")
+        authordiv += img(src=f"../avatar/{tweet_user}.jpg",
+                         style="display: none",
+                         _class="authorimg",
+                         onload="this.style.display = 'inline-block'"
+            )
         authordiv += div(user_list["user_" + str(tweet['user_id'])]['name'], _class="author_name")
         authordiv += div(a("@" + tweet_user, 
                            href=user_link,
@@ -238,6 +243,7 @@ def build_tweet_page(tweet, user_list):
         
     
     # TODO: figure out how to handle images 
+    script(src="../static.js", type="text/javascript")
     
     with open(f"{OUTPUT}/status/{tweet['id']}.html", 'w') as f:
         f.write(doc.render())
@@ -287,13 +293,26 @@ def write_css():
     .year {
         text-decoration: none
     }
+    
+    .authorimg {
+        float: left;
+        margin-right: 10px;
+        padding-top: 2px;
+    }
     '''
     with open(f"{OUTPUT}/style.css", 'w') as f:
         f.write(css)
     
 
+def writeJS():
+    js = """
+    """
+    with open(f"{OUTPUT}/static.js", 'w') as f:
+        f.write(js)
+    
 
-def writeTweetIndex(tweet, j):
+
+def writeTweetIndex(tweet, j, user_list):
     ''' Write a tweet onto the relevant yearly index page
     '''
     
@@ -301,6 +320,7 @@ def writeTweetIndex(tweet, j):
     linktext = tweet['full_text']
     linkdest = f"status/{tweet['id']}.html"
     tweet_date = datetime.strptime(tweet['created_at'], '%Y-%m-%dT%H:%M:%S%z')
+    tweet_user = user_list["user_" + str(tweet['user_id'])]['handle']
     
     year = tweet_date.strftime('%Y')
     
@@ -314,6 +334,11 @@ def writeTweetIndex(tweet, j):
        YEARS[year]['doc'] += a("Index", href="index.html")
        
     tdiv = div(_class="tweet")
+    tdiv += img(src=f"avatar/{tweet_user}.jpg",
+                         style="display: none",
+                         _class="authorimg",
+                         onload="this.style.display = 'inline-block'"
+            )
     tdiv += a(linktext, href=linkdest)
     tdiv += div(tweet_date.strftime('%d %b %Y %H:%M'), _class="tweetdate")
     tdiv += a("View Tweet", href=linkdest, _class="viewtweetlink")
@@ -337,8 +362,8 @@ if not os.path.exists(OUTPUT):
 if not os.path.exists(f"{OUTPUT}/status"):
     os.mkdir(f"{OUTPUT}/status")
 
-if not os.path.exists(f"{OUTPUT}/hashtag"):
-    os.mkdir(f"{OUTPUT}/hashtag")
+if not os.path.exists(f"{OUTPUT}/avatar"):
+    os.mkdir(f"{OUTPUT}/avatar")
 
 # Stats object
 global_stats = {
@@ -360,6 +385,7 @@ global_stats = {
 
 # Create the CSS file
 write_css()
+writeJS()
 
 # Build a list of users by id
 user_list = {}
@@ -454,7 +480,7 @@ doc += hr()
 doc += h3("Tweet Archives")
 
 for tweet in j['tweets']:
-    writeTweetIndex(tweet, j)
+    writeTweetIndex(tweet, j, user_list)
 
 # Iterate over the years and write out their pages, and a link to them
 for year in YEARS:
