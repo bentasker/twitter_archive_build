@@ -285,7 +285,6 @@ def write_css():
     
     .tweet a {
         text-decoration: none;
-        color: #000;
     }
     
     .viewtweetlink {
@@ -495,9 +494,15 @@ doc += h3("Tweet Archives")
 for tweet in j['tweets']:
     writeTweetIndex(tweet, j, user_list)
 
+# Add the script anchor
+doc += script(src="static.js", type="text/javascript")
+
 # Iterate over the years and write out their pages, and a link to them
 for year in YEARS:
     doc += li(a(f"{year} ({YEARS[year]['count']} tweets)", href=f"{year}.html", _class="year"))
+    
+    # Add a final script tag to the year page
+    YEARS[year]['doc'] += script(src="static.js", type="text/javascript")
     with open(f"{OUTPUT}/{year}.html", 'w') as f:
         f.write(YEARS[year]['doc'].render())
 
@@ -505,7 +510,3 @@ for year in YEARS:
 # Write out
 with open(f"{OUTPUT}/index.html", 'w') as f:
     f.write(doc.render())
-
-# I'm curious
-with open(f"{OUTPUT}/profanities.txt", 'w') as f:
-    f.write('\n'.join(sorted(global_stats['profanities'])))
