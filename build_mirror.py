@@ -163,6 +163,11 @@ def build_tweet_page(tweet, user_list):
     '''
     
     tweet_user = user_list["user_" + str(tweet['user_id'])]['handle']
+
+    user_link = "https://twitter.com/" + tweet_user
+    tweet_link = user_link + f"/status/{tweet['id']}"
+
+    
     tweet_summary = tweet["full_text"][0:80]
     pagetitle = f"{tweet_user}: \"{tweet_summary}\""
     
@@ -170,9 +175,19 @@ def build_tweet_page(tweet, user_list):
         link(_href="../style.css", _rel="stylesheet", _type="text/css")
         authordiv = div(_class="author_block")
         authordiv += div(user_list["user_" + str(tweet['user_id'])]['name'], _class="author_name")
-        authordiv += div("@" + user_list["user_" + str(tweet['user_id'])]['handle'], _class="authorhandle")
+        authordiv += div(a("@" + tweet_user, 
+                           href=user_link,
+                           _target="_blank",
+                           _rel="nofollow noopener"
+                           ),
+                        _class="authorhandle")
         
         div(tweet["text"], _class="tweettext")
+        
+        # Metadata
+        div(tweet['created_at'], _class="tweetdate")
+        div(a("View on Twitter", href=tweet_link), _class="originallink")
+        
     
     # TODO: figure out how to handle images 
     
@@ -185,8 +200,17 @@ def write_css():
     '''
     css = '''
     body {padding: 10px}
+    a {color: rgb(29, 155, 240)}
     .author_block {padding-bottom: 20px}
-    
+    .authorhandle a {color: gray}
+    .tweetdate {margin-top: 20px; color: rgb(83, 100, 113);}
+    .tweettext {
+        border: 1px solid;
+        border-radius: 5px;
+        padding: 5px;
+        max-width: 80%;
+        font-size: 1.05em;
+    }
     '''
     with open(f"{OUTPUT}/style.css", 'w') as f:
         f.write(css)
