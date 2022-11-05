@@ -220,11 +220,11 @@ def write_css():
     ''' Write CSS to the stylesheet
     '''
     css = '''
-    body {padding: 10px}
+    body {padding: 10px; background-color: #f1f6fb}
     a {color: rgb(29, 155, 240)}
-    .author_block {padding-bottom: 20px}
+    .author_block {padding-bottom: 20px; font-weight: bolder}
     .authorhandle a {color: gray}
-    .tweetdate {margin-top: 20px; color: rgb(83, 100, 113);}
+    .tweetdate {margin-top: 20px; color: rgb(83, 100, 113); font-style: italic}
     .tweettext {
         border: 1px solid;
         border-radius: 5px;
@@ -232,6 +232,7 @@ def write_css():
         max-width: 80%;
         font-size: 1.05em;
     }
+    .originallink {font-size: 0.8em; padding-top: 10px;}
     '''
     with open(f"{OUTPUT}/style.css", 'w') as f:
         f.write(css)
