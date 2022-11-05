@@ -49,7 +49,11 @@ CURSES_WHITELIST = [
     "hancock-up",
     "charset",
     "parser",
-    "swanky"
+    "swanky",
+    "fuckmusk8",
+    "shitkemisays",
+    "isnortarsenic",
+    "scunthorpe"
     ]
 
 
@@ -279,6 +283,10 @@ def write_css():
         margin-top: 0;
         font-size: 0.8em;
     }
+    
+    .year {
+        text-decoration: none
+    }
     '''
     with open(f"{OUTPUT}/style.css", 'w') as f:
         f.write(css)
@@ -298,17 +306,20 @@ def writeTweetIndex(tweet, j):
     
     # Create the object if it doesn't exist
     if year not in YEARS:
-       YEARS[year] = document(title=f"{year} Tweet Archive for query {j['query']}")
-       YEARS[year] += link(_href="style.css", _rel="stylesheet", _type="text/css")
-       YEARS[year] += h1(f"{year} Tweet Archive for query {j['query']}")
-       YEARS[year] += a("Index", href="index.html")
+       YEARS[year] = {}
+       YEARS[year]['count'] = 0
+       YEARS[year]['doc'] = document(title=f"{year} Tweet Archive for query {j['query']}")
+       YEARS[year]['doc'] += link(_href="style.css", _rel="stylesheet", _type="text/css")
+       YEARS[year]['doc'] += h1(f"{year} Tweet Archive for query {j['query']}")
+       YEARS[year]['doc'] += a("Index", href="index.html")
        
     tdiv = div(_class="tweet")
     tdiv += a(linktext, href=linkdest)
     tdiv += div(tweet_date.strftime('%d %b %Y %H:%M'), _class="tweetdate")
     tdiv += a("View Tweet", href=linkdest, _class="viewtweetlink")
 
-    YEARS[year] += tdiv
+    YEARS[year]['doc'] += tdiv
+    YEARS[year]['count'] += 1
 
 
 fh = open(sys.argv[1], 'r')
@@ -326,6 +337,8 @@ if not os.path.exists(OUTPUT):
 if not os.path.exists(f"{OUTPUT}/status"):
     os.mkdir(f"{OUTPUT}/status")
 
+if not os.path.exists(f"{OUTPUT}/hashtag"):
+    os.mkdir(f"{OUTPUT}/hashtag")
 
 # Stats object
 global_stats = {
@@ -393,8 +406,9 @@ for tweet in j['tweets']:
         global_stats["num_hashtags"] += link_info["num_hashtags"]
         y = [global_stats["hashtags"].add(z) for z in link_info["hashtags"].split(",")]
         
+        
     x += 1
-    if x == 300:
+    if x == 1000:
         break
        
 stats = f"""
@@ -415,6 +429,7 @@ Stats
 print(stats)
 
 
+# Create the Index Page
 
 # This looks quite messy without use of contexts. The problem is, we make calls out to write
 # into other pages. If you do those calls from within a context, dominator will write into *both* pages
@@ -441,14 +456,16 @@ doc += h3("Tweet Archives")
 for tweet in j['tweets']:
     writeTweetIndex(tweet, j)
 
-
 # Iterate over the years and write out their pages, and a link to them
 for year in YEARS:
-    doc += li(a(year, href=f"{year}.html"))
+    doc += li(a(f"{year} ({YEARS[year]['count']} tweets)", href=f"{year}.html", _class="year"))
     with open(f"{OUTPUT}/{year}.html", 'w') as f:
-        f.write(YEARS[year].render())
-
+        f.write(YEARS[year]['doc'].render())
 
 
 with open(f"{OUTPUT}/index.html", 'w') as f:
     f.write(doc.render())
+
+# I'm curious
+with open(f"{OUTPUT}/profanities.txt", 'w') as f:
+    f.write('\n'.join(sorted(global_stats['profanities'])))
