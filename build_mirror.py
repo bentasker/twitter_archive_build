@@ -256,6 +256,36 @@ def write_css():
         font-size: 1.05em;
     }
     .originallink {font-size: 0.8em; padding-top: 10px;}
+    .tweetwrapper {
+        height: 350px;
+        overflow-x: scroll;
+        margin-top: 20px;
+        border: 1px solid;
+        border-radius: 5px;
+        padding: 10px;
+    }
+    .tweetwrapper .tweet {    
+        padding-top: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #aaa2a2;
+    }
+    
+    .tweet a {
+        text-decoration: none;
+        color: #000;
+    }
+    
+    .viewtweetlink {
+        display: block;
+        color: rgb(29, 155, 240) !important;
+        margin-top: 5px;
+        font-size: 0.8em;
+    }
+    
+    .tweetwrapper .tweetdate {
+    margin-top: 0;
+    font-size: 0.8em;
+    }
     '''
     with open(f"{OUTPUT}/style.css", 'w') as f:
         f.write(css)
@@ -347,7 +377,6 @@ for tweet in j['tweets']:
         
     x += 1
     if x == 300:
-        print(global_stats)
         break
     
     # Build a point
@@ -374,5 +403,57 @@ for tweet in j['tweets']:
     # p.time(tweet['created_at'])
     
 
+print(global_stats)
+
+stats = f"""
+Archive Stats
+================
+
+Number of tweets: {global_stats['total']}
+
+Stats
+* {global_stats['has_mentions']} tweets contain a total of {global_stats['num_mentions']} mentions.
+* {global_stats['has_swear']} tweets contain a total of {global_stats['num_swear']} profanities.
+* {global_stats['has_hashtags']} tweets contain a total of {global_stats['num_hashtags']} hashtags.
+* {global_stats['has_links']} tweets contain a total of {global_stats['num_links']} links.
+* {global_stats['has_images']} tweets reference a total of {global_stats['num_images']} images.
+
+"""
+
+print(stats)
+
+
+with document(title=f"Tweet Archive for query {j['query']}") as doc:
+    link(_href="style.css", _rel="stylesheet", _type="text/css")
+    h1(f"Tweet Archive for query {j['query']}")
+    
+    stats = div(_class="statsdiv")
+    stats += h3("Archive Stats")
+    stats += li(f"Number of tweets: {global_stats['total']}")
+    stats += li(f"{global_stats['has_mentions']} tweets contain a total of {global_stats['num_mentions']} mentions.")
+    stats += li(f"{global_stats['has_swear']} tweets contain a total of {global_stats['num_swear']} profanities.")
+    stats += li(f"{global_stats['has_hashtags']} tweets contain a total of {global_stats['num_hashtags']} hashtags.")
+    stats += li(f"{global_stats['has_links']} tweets contain a total of {global_stats['num_links']} links.")
+    stats += li(f"{global_stats['has_images']} tweets reference a total of {global_stats['num_images']} images.")
+
+    # Add links to tweets
+    hr()
+    h3("Tweets")
+    tweetdiv = div(_class="tweetwrapper")
+    for tweet in j['tweets']:
+        linktext = tweet['full_text']
+        linkdest = f"status/{tweet['id']}.html"
+        tweet_date = datetime.strptime(tweet['created_at'], '%Y-%m-%dT%H:%M:%S%z')
+        
+        tdiv = div(_class="tweet")
+        tdiv += a(linktext, href=linkdest)
+        tdiv += div(tweet_date.strftime('%d %b %Y %H:%M'), _class="tweetdate")
+        tdiv += a("View Tweet", href=linkdest, _class="viewtweetlink")
+
+        tweetdiv += tdiv
     
 
+
+
+with open(f"{OUTPUT}/index.html", 'w') as f:
+    f.write(doc.render())
