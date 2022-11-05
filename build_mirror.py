@@ -5,6 +5,9 @@
 #
 # pip3 install dominate
 #
+# Copyright (c) 2022 B Tasker
+# Released under BSD 3-Clause
+# See LICENSE
 
 import json
 import os
