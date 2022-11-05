@@ -211,6 +211,7 @@ def build_tweet_page(tweet, user_list):
     
     tweet_user = user_list["user_" + str(tweet['user_id'])]['handle']
     tweet_date = datetime.strptime(tweet['created_at'], '%Y-%m-%dT%H:%M:%S%z')
+    tweet_year = tweet_date.strftime('%Y')
 
     user_link = "https://twitter.com/" + tweet_user
     tweet_link = user_link + f"/status/{tweet['id']}"
@@ -221,6 +222,9 @@ def build_tweet_page(tweet, user_list):
     
     with document(title=f"{tweet_user}: \"{pagetitle}\"") as doc:
         link(_href="../style.css", _rel="stylesheet", _type="text/css")
+        
+        a(tweet_year, href=f"../{tweet_year}.html", _class="yearindex")
+        
         authordiv = div(_class="author_block")
         authordiv += img(src=f"../avatar/{tweet_user}.jpg",
                          style="display: none",
@@ -298,6 +302,11 @@ def write_css():
         float: left;
         margin-right: 10px;
         padding-top: 2px;
+    }
+    
+    .yearindex {
+        margin-bottom: 20px;
+        display: block;
     }
     '''
     with open(f"{OUTPUT}/style.css", 'w') as f:
