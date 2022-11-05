@@ -139,7 +139,9 @@ def handle_embedded_links(tweet_text):
     Note: this *may* make the tweet longer than actually fits in a tweet
     '''
     
-    return re.sub("http(s)?:\/\/t\.co\/([A-Z0-9a-z]+)", get_tco_dest, tweet_text)
+    s = re.sub("http(s)?:\/\/t\.co\/([A-Z0-9a-z]+)", get_tco_dest, tweet_text)
+    s = re.sub("http(s)?:\/\/bit\.ly\/([A-Z0-9a-z]+)", get_tco_dest, s)
+    return s
     
 
 def get_tco_dest(match_o):
@@ -156,7 +158,7 @@ def get_tco_dest(match_o):
         return source_url
     
     # Return the redirect target
-    return r.headers['location']
+    return f"<a href='{r.headers['location']}' target=_blank rel='nofollow noopener'>{r.headers['location']}</a>"
     
 
 def handle_mentions(tweet_text):
