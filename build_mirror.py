@@ -227,6 +227,10 @@ def build_tweet_page(tweet, user_list):
     
     with doc.head:
         meta(name="viewport",content="width=device-width, initial-scale=1")
+        meta(name="description",content=f"Archived Twitter Tweet by @{tweet_user}: {pagetitle}")
+        meta(name="keywords",content=f"twitter,@{tweet_user}")
+        meta(name="author", content=tweet_user)
+        
         link(_href="../style.css", _rel="stylesheet", _type="text/css")
         
     with doc:
